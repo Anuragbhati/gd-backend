@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 app.use(
   cors({
-    origin: ["http://frontend:3000", "http://localhost:3000"],
+    origin: ["https://godowns.vercel.app", "http://localhost:3000"],
     credentials: true,
   })
 );
