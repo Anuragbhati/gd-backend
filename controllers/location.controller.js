@@ -31,17 +31,13 @@ exports.createLocation = async (req, res) => {
         .json({ message: "Name and is_godown are required fields" });
     }
 
-    // Create location object
     const locationData = {
       name,
       is_godown,
     };
 
-    // Handle parent_id based on is_godown
     if (is_godown) {
-      // For godowns, parent_id is optional (for sub-godowns)
       if (parent_id) {
-        // Verify that the parent godown exists
         const parentGodown = await Location.findById(parent_id);
         if (!parentGodown || !parentGodown.is_godown) {
           return res
@@ -51,13 +47,11 @@ exports.createLocation = async (req, res) => {
         locationData.parent_id = parent_id;
       }
     } else {
-      // For non-godown locations, parent_id is required
       if (!parent_id) {
         return res
           .status(400)
           .json({ message: "parent_id is required for non-godown locations" });
       }
-      // Verify that the parent godown exists
       const parentGodown = await Location.findById(parent_id);
       if (!parentGodown || !parentGodown.is_godown) {
         return res

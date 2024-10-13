@@ -3,7 +3,33 @@ const { Location } = require("../models/godown.model");
 
 exports.getAllItems = async (req, res) => {
   try {
-    const items = await Item.find();
+    const { stockLevel, category, brand, status } = req.query;
+
+    const filter = {};
+    if (stockLevel) {
+      filter.quantity = { $gte: stockLevel };
+    }
+    if (category) {
+      filter.category = category;
+    }
+    if (brand) {
+      filter.brand = brand;
+    }
+    if (status) {
+      filter.status = status;
+    }
+
+    for (const key in filter) {
+      if (
+        filter[key] === "" ||
+        filter[key] === null ||
+        filter[key] === undefined
+      ) {
+        delete filter[key];
+      }
+    }
+
+    const items = await Item.find(filter);
     res.json(items);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -34,12 +60,10 @@ exports.createItem = async (req, res) => {
       image_url,
     } = req.body;
 
-    // Validate required fields
     if (!name || !quantity || !category || !sub_godown_id || !price || !brand) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Verify that the sub_godown exists and is indeed a sub-godown
     const subGodown = await Location.findOne({
       _id: sub_godown_id,
       is_godown: false,
@@ -74,7 +98,6 @@ exports.updateItem = async (req, res) => {
     const item = await Item.findById(req.params.id);
     if (!item) return res.status(404).json({ message: "Item not found" });
 
-    // If sub_godown_id is being updated, verify the new sub-godown
     if (
       req.body.sub_godown_id &&
       req.body.sub_godown_id !== item.sub_godown_id.toString()
